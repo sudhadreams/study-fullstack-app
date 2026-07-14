@@ -45,3 +45,19 @@ export const getPool = async (): Promise<sql.ConnectionPool> => {
   const pool = await sql.connect(config);
   return pool;
 };
+
+export const initializeDatabase = async (): Promise<void> => {
+  const pool = await getPool();
+  await pool.request().query(`
+    IF NOT EXISTS (
+      SELECT * FROM sys.tables WHERE name = 'Tasks' AND schema_id = SCHEMA_ID('dbo')
+    )
+    BEGIN
+      CREATE TABLE dbo.Tasks (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        Title NVARCHAR(255) NOT NULL,
+        Completed BIT NOT NULL DEFAULT 0
+      );
+    END
+  `);
+};
