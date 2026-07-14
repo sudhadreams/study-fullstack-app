@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: studyfullstack-mssql
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_PID: 'Express'
+    env_file:
+      - .env
+    ports:
+      - '1433:1433'
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: studyfullstack-backend
+    depends_on:
+      - mssql
+    env_file:
+      - .env
+    environment:
+      DB_HOST: mssql
+      DB_NAME: studyfullstackdb
+      DB_PORT: '1433'
+      PORT: '3001'
+    volumes:
+      - ./backend:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
+    ports:
+      - '3001:3001'
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: studyfullstack-frontend
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    environment:
+      VITE_BACKEND_HOST: backend
+    volumes:
+      - ./frontend:/usr/src/app
+      - frontend_node_modules:/usr/src/app/node_modules
+    ports:
+      - '5173:5173'
+    restart: on-failure
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:
