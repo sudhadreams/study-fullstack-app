@@ -11,11 +11,25 @@ const getEnv = (key: string): string => {
   return value;
 };
 
+const dbHost = process.env.DB_HOST || process.env.DB_SERVER;
+const dbName = process.env.DB_NAME || process.env.DB_DATABASE;
+
+if (!dbHost) {
+  throw new Error('Missing required environment variable: DB_HOST or DB_SERVER');
+}
+
+if (!dbName) {
+  throw new Error('Missing required environment variable: DB_NAME or DB_DATABASE');
+}
+
+const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined;
+
 const config: sql.config = {
   user: getEnv('DB_USER'),
   password: getEnv('DB_PASSWORD'),
-  server: getEnv('DB_HOST'),
-  database: getEnv('DB_NAME'),
+  server: dbHost,
+  database: dbName,
+  port: dbPort,
   options: {
     encrypt: true,
     trustServerCertificate: true,
